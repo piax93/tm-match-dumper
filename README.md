@@ -1,2 +1,3 @@
-# TM2020MatchDumper
-Openplanet Plugin to dump match leaderboards
+# TM2020 Match Dumper
+
+Openplanet Plugin to dump match leaderboards.

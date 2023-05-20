@@ -1,0 +1,8 @@
+[meta]
+name     = "Match Dumper"
+author   = "MatP93"
+category = "MLHook"
+version  = "0.0.1"
+
+[script]
+dependencies = ["MLHook", "MLFeedRaceData"]
