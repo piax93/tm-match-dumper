@@ -2,7 +2,7 @@ PLUGIN_NAME=$(shell cat info.toml | grep ^name | grep -Eo '".+"' | tr -d '"' | t
 SOURCE_DIR=src
 OUTPUT_FILE=$(PLUGIN_NAME).op
 SOURCE_FILES=$(wildcard $(SOURCE_DIR)/*.as)
-METADATA_FILES=info.toml README.md LICENSE
+METADATA_FILES=info.toml LICENSE $(wildcard *.md)
 
 .PHONY: all install-hooks
 

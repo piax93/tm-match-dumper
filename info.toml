@@ -1,7 +1,7 @@
 [meta]
 name     = "Match Dumper"
 author   = "MatP93"
-category = "MLHook"
+category = "Analysis"
 version  = "0.0.1"
 
 [script]
