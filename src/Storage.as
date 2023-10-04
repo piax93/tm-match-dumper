@@ -1,33 +1,50 @@
-class MatchDump {
+/**
+ * Class implementing interface to store records in CSV file
+ */
 
-    private const string csvHeaders = "Time,Track,PlayerID,PlayerName,Record";
+const string csvHeaders = "Time,Track,PlayerID,PlayerName,Record";
+
+class MatchDump {
 
     string filepath;
     private IO::File handle;
+    private bool closed;
 
     MatchDump(const string&in basename) {
         this.filepath = IO::FromStorageFolder(basename) + ".csv";
         if (IO::FileExists(filepath)) {
-            this.handle = IO::File(this.filepath, IO::FileMode::Append);
+            this.handle.Open(this.filepath, IO::FileMode::Append);
         } else {
-            this.handle = IO::File(this.filepath, IO::FileMode::Write);
+            this.handle.Open(this.filepath, IO::FileMode::Write);
             this.handle.Write(csvHeaders + "\n");
         }
+        this.closed = false;
     }
 
-    void addEntry(const string& playerID, const string&in playerName, const int record) {
-        array<string> lineData(
+    void addEntry(
+        const string&in track,
+        const string&in playerID,
+        const string&in playerName,
+        const int record
+    ) {
+        array<string> lineData = {
             Text::Format("%d", Time::get_Stamp()),
-            this.getCurrentTrack(),
+            track,
             playerID,
             playerName,
             Text::Format("%d", record),
-        );
+        };
         this.handle.Write(string::Join(lineData, ",") + "\n");
+        this.handle.Flush();
     }
 
-    string getCurrentTrack() {
-        return "";
+    void close() {
+        this.handle.Close();
+        this.closed = true;
+    }
+
+    bool isClosed() {
+        return this.closed;
     }
 
 }
