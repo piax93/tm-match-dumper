@@ -22,8 +22,9 @@ void RenderMenu() {
 void RenderInterface() {
     if (windowVisible) {
         UI::Begin(pluginName, windowVisible, UI::WindowFlags::NoCollapse | UI::WindowFlags::AlwaysAutoResize);
-        UI::Text("Enter filename");
-        outputFile = UI::InputText("Output Filename", outputFile);
+        UI::Text("Enter Filename");
+        outputFile = UI::InputText("##", outputFile);
+        UI::BeginGroup();
         if (!isRecordingTimes && UI::Button("Start Recording")) {
             print("Recording match times to " + outputFile);
             @dumper = MatchDump(outputFile);
@@ -36,6 +37,11 @@ void RenderInterface() {
             trackedPlayers.DeleteAll();
             dumper.close();
         }
+        UI::SameLine();
+        if (UI::Button("Open Folder")) {
+            OpenExplorerPath(IO::FromStorageFolder(""));
+        }
+        UI::EndGroup();
         UI::End();
     }
 }
