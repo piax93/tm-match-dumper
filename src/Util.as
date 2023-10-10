@@ -34,3 +34,13 @@ void DepCheck() {
         while (true) sleep(10000);
     }
 }
+
+
+/**
+ * Just some 3-state flag
+ */
+enum Knowledge {
+    UNSURE = 0,
+    YEP = 1,
+    NOPE = 2,
+}

@@ -8,6 +8,7 @@ bool windowVisible = false;
 // Global state
 string outputFile = "dump";
 string currentMap = "";
+Knowledge currentMapMultilap = Knowledge::UNSURE;
 dictionary trackedPlayers = dictionary();
 MatchDump@ dumper;
 
@@ -59,6 +60,7 @@ void recordMatchTimes() {
     auto mapName = StripFormatCodes(app.RootMap.MapName);
     if (currentMap != mapName) {
         trackedPlayers.DeleteAll();
+        currentMapMultilap = Knowledge::UNSURE;
         currentMap = mapName;
     }
 
@@ -68,8 +70,18 @@ void recordMatchTimes() {
         auto player = cast<MLFeed::PlayerCpInfo_V4>(mlf.SortedPlayers_Race[i]);
         bool alreadyTracked = trackedPlayers.Exists(player.WebServicesUserId);
 
+        // With multilap finishes we get the amazing state of having finished before even starting
+        if (currentMapMultilap == Knowledge::UNSURE) {
+            if (player.CpCount == 0 && player.IsFinished && player.IsSpawned) {
+                currentMapMultilap = Knowledge::YEP;
+            } else if (player.IsFinished && player.LastCpTime != 0) {
+                currentMapMultilap = Knowledge::NOPE;
+            }
+        }
+        bool isActuallyFinished = (currentMapMultilap != Knowledge::YEP && player.IsFinished) || player.CpCount > mlf.CpCount;
+
         // New finish for the player, we store it
-        if (player.IsFinished && !alreadyTracked) {
+        if (isActuallyFinished && !alreadyTracked && player.LastCpTime != 0) {
             print("Recording time for " + player.Name);
             dumper.addEntry(mapName, player.WebServicesUserId, player.Name, player.LastCpTime);
             trackedPlayers.Set(player.WebServicesUserId, 1);
@@ -77,7 +89,7 @@ void recordMatchTimes() {
         }
 
         // Player was tracked, but has not finished, meaning they started a new round, so we "untrack" them
-        if (!player.IsFinished && alreadyTracked) {
+        if (!isActuallyFinished && alreadyTracked) {
             trackedPlayers.Delete(player.WebServicesUserId);
         }
     }
