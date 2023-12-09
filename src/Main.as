@@ -82,7 +82,7 @@ void recordMatchTimes() {
                 currentMapMultilap = Knowledge::NOPE;
             }
         }
-        bool isActuallyFinished = (currentMapMultilap != Knowledge::YEP && player.IsFinished) || player.CpCount > mlf.CpCount;
+        bool isActuallyFinished = (currentMapMultilap != Knowledge::YEP && player.IsFinished) || uint(player.CpCount) > mlf.CpCount;
 
         // New finish for the player, we store it
         if (isActuallyFinished && !alreadyTracked && player.LastCpTime != 0) {
