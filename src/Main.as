@@ -1,6 +1,10 @@
 // Just for ease of access
 const string pluginName = Meta::ExecutingPlugin().Name;
 
+// Settings
+[Setting name="Polling Rate Milliseconds" description="How often the plugin checks for players crossing the finish line"]
+int dataPollingRateMs = 1000;
+
 // UI toggles
 bool isRecordingTimes = false;
 bool windowVisible = false;
@@ -102,6 +106,6 @@ void Main() {
         if (isRecordingTimes) {
             recordMatchTimes();
         }
-        sleep(1000);
+        sleep(dataPollingRateMs);
     }
 }
