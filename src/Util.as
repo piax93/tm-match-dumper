@@ -37,6 +37,18 @@ void DepCheck() {
 
 
 /**
+ * Check if online rooms is in warmup round
+ */
+bool IsInWarmup(CTrackMania@ app) {
+    return !(
+        app.Network is null
+        || app.Network.ClientManiaAppPlayground is null
+        || app.Network.ClientManiaAppPlayground.UI.UIStatus != CGamePlaygroundUIConfig::EUIStatus::Warning
+    );
+}
+
+
+/**
  * Just some 3-state flag
  */
 enum Knowledge {

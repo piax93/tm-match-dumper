@@ -8,6 +8,7 @@ int dataPollingRateMs = 1000;
 // UI toggles
 bool isRecordingTimes = false;
 bool windowVisible = false;
+bool skipWarmups = true;
 
 // Global state
 string outputFile = "dump";
@@ -29,6 +30,7 @@ void RenderInterface() {
         UI::Begin(pluginName, windowVisible, UI::WindowFlags::NoCollapse | UI::WindowFlags::AlwaysAutoResize);
         UI::Text("Enter Filename");
         outputFile = UI::InputText("##", outputFile);
+        skipWarmups = UI::Checkbox("Skip warm-ups", skipWarmups);
         UI::BeginGroup();
         if (!isRecordingTimes && UI::Button("Start Recording")) {
             print("Recording match times to " + outputFile);
@@ -56,9 +58,12 @@ void recordMatchTimes() {
     // Double check recording is enabled
     if (dumper is null || dumper.isClosed()) return;
 
-    // Check we are gaming
+    // Check we are gaming and load some stuff
     auto app = cast<CTrackMania>(GetApp());
     if (app.CurrentPlayground is null || (app.CurrentPlayground.UIConfigs.Length < 1)) return;
+
+    // Check if in warmup and skip if we have to
+    if (skipWarmups && IsInWarmup(app)) return;
 
     // If we changed track, let's clear player tracking
     auto mapName = StripFormatCodes(app.RootMap.MapName);
