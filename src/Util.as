@@ -49,6 +49,28 @@ bool IsInWarmup(CTrackMania@ app) {
 
 
 /**
+ * Get sum of team scores if in server
+ */
+uint GetTotalServerScore(CTrackMania@ app) {
+    if (
+        app.Network is null
+        || app.Network.ClientManiaAppPlayground is null
+        || !(cast<CTrackManiaNetworkServerInfo>(app.Network.ServerInfo).IsTeamMode)
+    ) return 0;
+    uint total = 0, scoresFound = 0;
+    auto mmdata = MLFeed::GetTeamsMMData_V1();
+    for(uint i = 0; i < mmdata.ClanScores.Length && scoresFound < 2; i++) {
+        auto score = mmdata.ClanScores[i];
+        if (score > 0) {
+            scoresFound++;
+            total += score;
+        }
+    }
+    return total;
+}
+
+
+/**
  * Just some 3-state flag
  */
 enum Knowledge {

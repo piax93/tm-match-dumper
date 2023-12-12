@@ -9,8 +9,11 @@ int dataPollingRateMs = 1000;
 bool isRecordingTimes = false;
 bool windowVisible = false;
 bool skipWarmups = true;
+bool recordScoredPoints = false;
 
 // Global state
+uint roundNumber = 0;
+bool recentlyRecordedTime = false;
 string outputFile = "dump";
 string currentMap = "";
 Knowledge currentMapMultilap = Knowledge::UNSURE;
@@ -31,15 +34,18 @@ void RenderInterface() {
         UI::Text("Enter Filename");
         outputFile = UI::InputText("##", outputFile);
         skipWarmups = UI::Checkbox("Skip warm-ups", skipWarmups);
+        recordScoredPoints = UI::Checkbox("Record points scored by player", recordScoredPoints);
         UI::BeginGroup();
         if (!isRecordingTimes && UI::Button("Start Recording")) {
             print("Recording match times to " + outputFile);
-            @dumper = MatchDump(outputFile);
+            @dumper = MatchDump(outputFile, recordScoredPoints);
             isRecordingTimes = true;
         }
         if (isRecordingTimes && UI::Button("Stop Recording")) {
             print("Stopped recording match times");
             isRecordingTimes = false;
+            recentlyRecordedTime = false;
+            roundNumber = 0;
             currentMap = "";
             trackedPlayers.DeleteAll();
             dumper.close();
@@ -65,9 +71,18 @@ void recordMatchTimes() {
     // Check if in warmup and skip if we have to
     if (skipWarmups && IsInWarmup(app)) return;
 
+    if (roundNumber > 0) {
+        // Reset rounds number in warmups
+        if (IsInWarmup(app)) roundNumber = 0;
+    } else {
+        // If recording start mid-match, set round number to sum of teams scores
+        roundNumber = GetTotalServerScore(app);
+    }
+
     // If we changed track, let's clear player tracking
     auto mapName = StripFormatCodes(app.RootMap.MapName);
     if (currentMap != mapName) {
+        roundNumber = 0;
         trackedPlayers.DeleteAll();
         currentMapMultilap = Knowledge::UNSURE;
         currentMap = mapName;
@@ -92,8 +107,9 @@ void recordMatchTimes() {
         // New finish for the player, we store it
         if (isActuallyFinished && !alreadyTracked && player.LastCpTime != 0) {
             print("Recording time for " + player.Name);
-            dumper.addEntry(mapName, player.WebServicesUserId, player.Name, player.LastCpTime);
+            dumper.addEntry(mapName, player.WebServicesUserId, player.Name, player.LastCpTime, roundNumber, player.RoundPoints);
             trackedPlayers.Set(player.WebServicesUserId, 1);
+            recentlyRecordedTime = true;
             continue;
         }
 
@@ -101,6 +117,12 @@ void recordMatchTimes() {
         if (!isActuallyFinished && alreadyTracked) {
             trackedPlayers.Delete(player.WebServicesUserId);
         }
+    }
+
+    // Euristically guess round switching
+    if (recentlyRecordedTime && trackedPlayers.IsEmpty()) {
+        roundNumber++;
+        recentlyRecordedTime = false;
     }
 }
 
