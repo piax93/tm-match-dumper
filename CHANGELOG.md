@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1 - 2024-05-27
+
+* Stop using deprecated global functions
+
+
 ## 0.1.0 - 2023-12-12
 
 * Allow customizing polling rate

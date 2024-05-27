@@ -80,7 +80,7 @@ void recordMatchTimes() {
     }
 
     // If we changed track, let's clear player tracking
-    auto mapName = StripFormatCodes(app.RootMap.MapName);
+    auto mapName = Text::StripFormatCodes(app.RootMap.MapName);
     if (currentMap != mapName) {
         roundNumber = 0;
         trackedPlayers.DeleteAll();
