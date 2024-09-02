@@ -10,16 +10,23 @@ class MatchDump {
     private IO::File handle;
     private bool closed;
     private bool recordPoints;
+    private bool recordCPs;
 
-    MatchDump(const string&in basename, const bool recordPoints=false) {
+    MatchDump(const string&in basename, const bool recordPoints=false, const bool recordCPs=false) {
         this.filepath = IO::FromStorageFolder(basename) + ".csv";
         if (IO::FileExists(filepath)) {
             this.handle.Open(this.filepath, IO::FileMode::Append);
         } else {
             this.handle.Open(this.filepath, IO::FileMode::Write);
-            this.handle.Write(csvHeaders + (recordPoints ? ",Points" : "") + "\n");
+            this.handle.Write(
+                csvHeaders
+                + (recordPoints ? ",Points" : "")
+                + (recordCPs ? ",CP" : "")
+                + "\n"
+            );
         }
         this.recordPoints = recordPoints;
+        this.recordCPs = recordCPs;
         this.closed = false;
     }
 
@@ -29,7 +36,8 @@ class MatchDump {
         const string&in playerName,
         const int record,
         const int round=0,
-        const int points=-1
+        const int points=-1,
+        const int checkpoint=-1
     ) {
         array<string> lineData = {
             Text::Format("%d", Time::get_Stamp()),
@@ -37,12 +45,16 @@ class MatchDump {
             playerID,
             playerName,
             Text::Format("%d", record),
-            Text::Format("%d", round),
-            Text::Format("%d", points)
+            Text::Format("%d", round)
         };
-        if (!this.recordPoints) lineData.RemoveLast();
+        if (this.recordPoints) {
+            lineData.InsertLast(Text::Format("%d", points));
+        }
+        if (this.recordCPs) {
+            lineData.InsertLast(checkpoint < 0 ? "finish": Text::Format("%d", checkpoint));
+        }
         this.handle.Write(string::Join(lineData, ",") + "\n");
-        this.handle.Flush();
+        if (!this.recordPoints || checkpoint < 0) this.handle.Flush();
     }
 
     void close() {

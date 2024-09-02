@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0 - 2024-09-02
+
+* Add option to record all checkpoints
+
+
 ## 0.1.1 - 2024-05-27
 
 * Stop using deprecated global functions
