@@ -11,8 +11,14 @@ class MatchDump {
     private bool closed;
     private bool recordPoints;
     private bool recordCPs;
+    private bool recordRoundId;
 
-    MatchDump(const string&in basename, const bool recordPoints=false, const bool recordCPs=false) {
+    MatchDump(
+        const string&in basename,
+        const bool recordPoints=false,
+        const bool recordCPs=false,
+        const bool recordRoundId=false
+    ) {
         this.filepath = IO::FromStorageFolder(basename) + ".csv";
         if (IO::FileExists(filepath)) {
             this.handle.Open(this.filepath, IO::FileMode::Append);
@@ -22,11 +28,13 @@ class MatchDump {
                 csvHeaders
                 + (recordPoints ? ",Points" : "")
                 + (recordCPs ? ",CP" : "")
+                + (recordRoundId ? ",RoundID" : "")
                 + "\n"
             );
         }
         this.recordPoints = recordPoints;
         this.recordCPs = recordCPs;
+        this.recordRoundId = recordRoundId;
         this.closed = false;
     }
 
@@ -37,7 +45,8 @@ class MatchDump {
         const int record,
         const int round=0,
         const int points=-1,
-        const int checkpoint=-1
+        const int checkpoint=-1,
+        const string&in _roundId=""
     ) {
         array<string> lineData = {
             Text::Format("%d", Time::get_Stamp()),
@@ -52,6 +61,9 @@ class MatchDump {
         }
         if (this.recordCPs) {
             lineData.InsertLast(checkpoint < 0 ? "finish": Text::Format("%d", checkpoint));
+        }
+        if (this.recordRoundId) {
+            lineData.InsertLast(_roundId);
         }
         this.handle.Write(string::Join(lineData, ",") + "\n");
         if (!this.recordPoints || checkpoint < 0) this.handle.Flush();

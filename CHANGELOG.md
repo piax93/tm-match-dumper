@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0 - 2025-05-05
+
+* Add option to assign unique round IDs
+
+
 ## 0.2.0 - 2024-09-02
 
 * Add option to record all checkpoints

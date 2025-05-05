@@ -11,9 +11,11 @@ bool windowVisible = false;
 bool skipWarmups = true;
 bool recordScoredPoints = false;
 bool recordEveryCheckpoint = false;
+bool assignRoundIds = false;
 
 // Global state
 uint roundNumber = 0;
+string roundId = "";
 bool recentlyRecordedTime = false;
 string outputFile = "dump";
 string currentMap = "";
@@ -37,10 +39,11 @@ void RenderInterface() {
         skipWarmups = UI::Checkbox("Skip warm-ups", skipWarmups);
         recordScoredPoints = UI::Checkbox("Record points scored by player", recordScoredPoints);
         recordEveryCheckpoint = UI::Checkbox("Record Every Checkpoint", recordEveryCheckpoint);
+        assignRoundIds = UI::Checkbox("Assign Unique Round IDs", assignRoundIds);
         UI::BeginGroup();
         if (!isRecordingTimes && UI::Button("Start Recording")) {
             print("Recording match times to " + outputFile);
-            @dumper = MatchDump(outputFile, recordScoredPoints, recordEveryCheckpoint);
+            @dumper = MatchDump(outputFile, recordScoredPoints, recordEveryCheckpoint, assignRoundIds);
             isRecordingTimes = true;
         }
         if (isRecordingTimes && UI::Button("Stop Recording")) {
@@ -62,6 +65,14 @@ void RenderInterface() {
 }
 
 
+void updateRoundNumber(uint n) {
+    roundNumber = n;
+    if (assignRoundIds) {
+        roundId = GenerateRoundId();
+    }
+}
+
+
 void recordMatchTimes() {
     // Double check recording is enabled
     if (dumper is null || dumper.isClosed()) return;
@@ -75,16 +86,16 @@ void recordMatchTimes() {
 
     if (roundNumber > 0) {
         // Reset rounds number in warmups
-        if (IsInWarmup(app)) roundNumber = 0;
+        if (IsInWarmup(app)) updateRoundNumber(0);
     } else {
         // If recording start mid-match, set round number to sum of teams scores
-        roundNumber = GetTotalServerScore(app);
+        updateRoundNumber(GetTotalServerScore(app));
     }
 
     // If we changed track, let's clear player tracking
     auto mapName = Text::StripFormatCodes(app.RootMap.MapName);
     if (currentMap != mapName) {
-        roundNumber = 0;
+        updateRoundNumber(0);
         trackedPlayers.DeleteAll();
         currentMapMultilap = Knowledge::UNSURE;
         currentMap = mapName;
@@ -110,11 +121,11 @@ void recordMatchTimes() {
         if (isActuallyFinished && !alreadyTracked && player.LastCpTime != 0) {
             print("Recording time for " + player.Name);
             if (recordEveryCheckpoint) {
-                for (int j = 1; j < player.CpTimes.Length - 1; j++) {
-                    dumper.addEntry(mapName, player.WebServicesUserId, player.Name, player.CpTimes[j], roundNumber, 0, j);
+                for (uint j = 1; j < player.CpTimes.Length - 1; j++) {
+                    dumper.addEntry(mapName, player.WebServicesUserId, player.Name, player.CpTimes[j], roundNumber, 0, j, roundId);
                 }
             }
-            dumper.addEntry(mapName, player.WebServicesUserId, player.Name, player.LastCpTime, roundNumber, player.RoundPoints);
+            dumper.addEntry(mapName, player.WebServicesUserId, player.Name, player.LastCpTime, roundNumber, player.RoundPoints, -1, roundId);
             trackedPlayers.Set(player.WebServicesUserId, 1);
             recentlyRecordedTime = true;
             continue;
@@ -128,7 +139,7 @@ void recordMatchTimes() {
 
     // Euristically guess round switching
     if (recentlyRecordedTime && trackedPlayers.IsEmpty()) {
-        roundNumber++;
+        updateRoundNumber(roundNumber + 1);
         recentlyRecordedTime = false;
     }
 }

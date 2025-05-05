@@ -1,4 +1,14 @@
 /**
+ * Just some 3-state flag
+ */
+enum Knowledge {
+    UNSURE = 0,
+    YEP = 1,
+    NOPE = 2,
+}
+
+
+/**
  * Log warning and show notification
  */
 void NotifyError(const string &in msg) {
@@ -71,10 +81,8 @@ uint GetTotalServerScore(CTrackMania@ app) {
 
 
 /**
- * Just some 3-state flag
+ * Create random round identifier
  */
-enum Knowledge {
-    UNSURE = 0,
-    YEP = 1,
-    NOPE = 2,
+string GenerateRoundId() {
+    return "r-" + Crypto::Random(8).ReadToHex(8);
 }
