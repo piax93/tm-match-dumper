@@ -13,6 +13,6 @@ The files are stored in Openplanet's plugin storage folder, so by default
 %UserProfile%\OpenplanetNext\PluginStorage\MatchDumper
 ```
 
-![in-game ui](https://github.com/piax93/tm-match-dumper/assets/9299307/7d203448-a6e9-4ed7-a7c7-333bf4ce2954)
+![in-game ui](https://github.com/user-attachments/assets/13bea51c-f967-491a-a084-51c0e778c6ac)
 
 ![csv data](https://github.com/piax93/tm-match-dumper/assets/9299307/4d3ae4c0-ae93-464f-b404-51d20af94e5b)
